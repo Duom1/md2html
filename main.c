@@ -1,9 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "buffer.h"
 #include "exit_stat.h"
 #include "file_util.h"
-#include "buffer.h"
 #include "process_input.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #define ARGMAX 2
 #define ARGMIN 2
