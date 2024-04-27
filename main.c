@@ -1,25 +1,34 @@
-#include "buffer.h"
-#include "exit_stat.h"
-#include "file_util.h"
-#include "process_input.h"
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include "list.h"
 
-#define ARGMAX 2
-#define ARGMIN 2
+void printIntList(List *list);
 
 int main(int argc, char **argv) {
-  if (argc > ARGMAX || argc < ARGMIN) {
-    fprintf(stderr, "%s: incorrect amount of arguments\n", argv[0]);
-    return EXIT_INV_ARG;
+  List *intList = CreateList(120);
+  printf("capacity of the list = %i\n", intList->capcity);
+  int test = 97;
+  int cap = 23;
+  for (int i = 0; i < cap; ++i) {
+    int *elem = malloc(sizeof(int));
+    *elem = test;
+    test += 22;
+    PushList(intList, elem);
   }
-
-  Buffer *file_buf = get_file_buf(argv[1]);
-  Buffer *output = process_buf(file_buf);
-
-  free(output->data);
-  free(file_buf->data);
-  free(output);
-  free(file_buf);
+  printf("capacity of the list = %i\n", intList->capcity);
+  printIntList(intList);
+  puts("");
+  printf("popped = %i\n", *(int *)PopList(intList));
+  printf("capacity of the list = %i\n", intList->capcity);
+  printIntList(intList);
+  puts("");
+  FreeList(intList);
   return EXIT_SUCCESS;
+}
+
+void printIntList(List *list) {
+  for (int i = 0; i < list->size; ++i) {
+    int c = *(int*)list->elements[i];
+    printf("%i: %i, ", i, c);
+  }
 }

@@ -1,6 +1,5 @@
-SOURCE = main.c\
-				 file_util.c \
-				 process_input.c
+SOURCE = main.c \
+				 list.c
 OBJS = $(SOURCE:.c=.o)
 NAME = mymd2html
 CFLAGS = -Wall -Wextra
