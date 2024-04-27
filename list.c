@@ -1,10 +1,21 @@
 #include "list.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 // function used to create a new list
 List *CreateList(int cap) {
   List *list = malloc(sizeof(List));
+  if (list == NULL) {
+    fprintf(stderr, "Unable to create list in CreateList().\n");
+    abort();
+  }
   list->elements = malloc(sizeof(void *) * cap);
+  if (list == NULL) {
+    fprintf(stderr,
+            "Unable to create space of %i for elements in CreateList().\n",
+            cap);
+    abort();
+  }
   list->capcity = cap;
   list->size = 0;
   return list;
@@ -42,13 +53,22 @@ void *PopList(List *list) {
 void ExplandList(List *list, int expBy) {
   list->elements =
       realloc(list->elements, sizeof(void *) * (list->capcity + expBy));
+  if (list == NULL) {
+    fprintf(stderr, "Unable to add space to elements by %i in ExplandList().\n",
+            expBy);
+    abort();
+  }
   list->capcity += expBy;
 }
 
-// truncates the list to given amount 
+// truncates the list to given amount
 void TruncList(List *list, int truncTo) {
-  list->elements =
-      realloc(list->elements, sizeof(void *) * truncTo);
+  list->elements = realloc(list->elements, sizeof(void *) * truncTo);
+  if (list == NULL) {
+    fprintf(stderr, "Unable to truncate elements to %i in TruncList().\n",
+            truncTo);
+    abort();
+  }
   list->capcity = truncTo;
   if (list->size > list->capcity) {
     list->size = list->capcity + 1;
