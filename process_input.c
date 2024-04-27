@@ -28,45 +28,23 @@ Buffer *process_buf(Buffer *file_buf) {
   int start_i = 0;
   int end_i = 0;
   int dif_i = 0;
-  bool expecting = false;
+  Buf_slice slices[100];
+  int slice_i = 0;
   for (int i = 0; i < file_buf->used; ++i) {
     char c = file_buf->data[i];
-    if (c == '#' || c == '>') {
-      if (i == 0){
-        goto start_element;
-      } else if (file_buf->data[i-1] == '\n') {
-        goto start_element;
-      }
-      goto no_start;
-    start_element:
-      start_i = i;
-      expecting = true;
-    no_start:
-    } else if (c == '\n' && expecting) {
+    if (c == '\n') {
       end_i = i;
       dif_i = end_i - start_i;
-      if (dif_i == 0) {
-        fprintf(stderr, "index difference is too small: %i, %i", start_i,
-                end_i);
-        exit_code = EXIT_PARSE_FAIL;
-        goto fail_parse;
-      }
-      int elem_s = dif_i + 1;
-      char *element = malloc(elem_s);
-      memset(element, 0, elem_s);
-      for (int j = start_i; j <= end_i; ++j) {
-        char tmp[2] = {file_buf->data[j], '\0'};
-        strcat(element, tmp);
-      }
-      printf("%s", element);
-      free(element);
-      expecting = false;
+      slices[slice_i].start = start_i;
+      slices[slice_i].end = end_i;
+      ++slice_i;
+      start_i = end_i + 1;
     }
   }
   goto normal_return;
 
-fail_parse:
-  free(processed->data);
+//fail_parse:
+//  free(processed->data);
 
 processed_data_fail:
   free(processed);
