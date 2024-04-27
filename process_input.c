@@ -31,12 +31,17 @@ Buffer *process_buf(Buffer *file_buf) {
   bool expecting = false;
   for (int i = 0; i < file_buf->used; ++i) {
     char c = file_buf->data[i];
-    if (c == '#') {
+    if (c == '#' || c == '>') {
+      if (i == 0){
+        goto start_element;
+      } else if (file_buf->data[i-1] == '\n') {
+        goto start_element;
+      }
+      goto no_start;
+    start_element:
       start_i = i;
       expecting = true;
-    } else if (c == '>') {
-      start_i = i;
-      expecting = true;
+    no_start:
     } else if (c == '\n' && expecting) {
       end_i = i;
       dif_i = end_i - start_i;
