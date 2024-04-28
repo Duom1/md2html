@@ -33,7 +33,7 @@ char MDElementTypeNames[13][15] = {
   "block qoute",
   "list",
   "unordered list",
-  "code clock",
+  "code block",
   "ruler",
   "image",
 };
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
   FreeList(lines, false);
   printList(linesType);
 
-  for (int i=0; i<linesType->size; ++i) {
+  for (int i = 0; i < linesType->size; ++i) {
     free(((MDLine_t *)linesType->elements[i])->data);
   }
   FreeList(linesType, true);
@@ -79,14 +79,37 @@ int main(int argc, char **argv) {
 
 MDLineType getMDLineType(char *line) {
   MDLineType type = UNDEF;
-  int len = strlen(line);
-  switch (line[0]) {
-  case '#':
+  char firstSix[7];
+  strncpy(firstSix, line, 6);
+  firstSix[6] = '\0';
+  if (firstSix[0] == '#') {
     type = HEADER1;
-    break;
-  case '>':
+    if (firstSix[1] == '#') {
+      type = HEADER2;
+      if (firstSix[2] == '#') {
+        type = HEADER3;
+        if (firstSix[3] == '#') {
+          type = HEADER4;
+          if (firstSix[4] == '#') {
+            type = HEADER5;
+            if (strcmp(firstSix, "######") == 0) {
+              type = HEADER6;
+            }
+          }
+        }
+      }
+    }
+  } else if (firstSix[0] == '>') {
     type = BLOCK_QOUTE;
-    break;
+  } else if (firstSix[0] == '-') {
+    type = ULIST;
+    if (firstSix[1] == '-' && firstSix[2] == '-'){
+      type = RULER;
+    }
+  } else if (firstSix[0] == '!') {
+    type = IMAGE;
+  } else if (firstSix[0] == '`' && firstSix[1] == '`' && firstSix[2] == '`') {
+    type = CODE_BLOCK;
   }
   return type;
 }
@@ -105,13 +128,13 @@ List *appendMDType(List *list) {
 void printList(List *list) {
   for (int i = 0; i < list->size; ++i) {
     if (((MDLine_t *)list->elements[i])->type != UNDEF) {
-      printf("Element: %s\nType: %s\n",
-             ((MDLine_t *)list->elements[i])->data,
+      printf("Element: %s\nType: %s\n", ((MDLine_t *)list->elements[i])->data,
              MDElementTypeNames[((MDLine_t *)list->elements[i])->type]);
     }
   }
 }
 
+#define ADD_EXTRA_SPACE_TO_LINE 8
 void readFileIntoBuffer(char *name, char **target, int *size) {
   if (*target != NULL) {
     perror("There maybe a memory leak because target is not NULL in "
@@ -128,7 +151,8 @@ void readFileIntoBuffer(char *name, char **target, int *size) {
   int fileSize = ftell(file);
   fseek(file, 0, SEEK_SET);
 
-  *target = (char *)malloc(sizeof(char) * fileSize + 1);
+  *target =
+      (char *)malloc(sizeof(char) * (fileSize + 1 + ADD_EXTRA_SPACE_TO_LINE));
   if (target == NULL) {
     perror("Could not allocate space for file buffer.");
     abort();
