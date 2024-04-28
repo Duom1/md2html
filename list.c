@@ -1,4 +1,5 @@
 #include "list.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -22,11 +23,13 @@ List *CreateList(int cap) {
 }
 
 // this function is used to free the momory that the list uses
-void FreeList(List *list) {
-  for (int i = 0; i < list->size; ++i) {
-    // If this element has allocated momory other that it self YOU are
-    // reponsible for freeing it!
-    free(list->elements[i]);
+void FreeList(List *list, bool freeElem) {
+  if (freeElem) {
+    for (int i = 0; i < list->size; ++i) {
+      // If this element has allocated momory other that it self YOU are
+      // reponsible for freeing it!
+      free(list->elements[i]);
+    }
   }
   free(list->elements);
   free(list);
@@ -44,7 +47,7 @@ void PushList(List *list, void *ap) {
 // pop an item from the top of the list
 void *PopList(List *list) {
   void *ans = list->elements[list->size - 1];
-  list->size -= 1;
+  --list->size;
   TruncCheck(list, AUTO_TRUNC, AUTO_EXP);
   return ans;
 }
