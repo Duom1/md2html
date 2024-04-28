@@ -151,6 +151,9 @@ List *createHtmlFromMDList(List *list) {
       trimChars(line, 2, true);
       sprintf(html, MDtoHTML[type], line);
       break;
+    case RULER:
+      sprintf(html, MDtoHTML[RULER]);
+      break;
     default:
       sprintf(html, MDtoHTML[UNDEF], line);
       break;
