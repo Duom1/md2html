@@ -19,10 +19,11 @@ enum MarkdownElementTypes {
   CODE_BLOCK,
   RULER,
   IMAGE,
+  PARAG,
 };
 
 // clang-format off
-char MDElementTypeNames[13][15] = {
+char MDElementTypeNames[][15] = {
   "undefined",
   "header 1",
   "header 2",
@@ -36,6 +37,23 @@ char MDElementTypeNames[13][15] = {
   "code block",
   "ruler",
   "image",
+  "paragraph"
+};
+char MDtoHTML[][30] = {
+  "%s\n",
+  "<h1>%s</h1>\n",
+  "<h2>%s</h2>\n",
+  "<h3>%s</h3>\n",
+  "<h4>%s</h4>\n",
+  "<h5>%s</h5>\n",
+  "<h6>%s</h6>\n",
+  "<blockqoute>%s</blockqoute>\n",
+  "%s\n",
+  "%s\n",
+  "%s\n",
+  "<hr>\n",
+  "<img src=\"%s\" alt=\"%s\">\n",
+  "<p>%s</p>\n"
 };
 // clang-format on
 
@@ -50,6 +68,7 @@ void readBufferLinesIntoList(List *list, char *buf, int bufLen);
 void readFileIntoBuffer(char *name, char **target, int *size);
 List *appendMDType(List *list);
 MDLineType getMDLineType(char *line);
+List *createHtmlFromMDList(List *list);
 
 int main(int argc, char **argv) {
   if (argc > 2 || argc < 2) {
@@ -67,14 +86,29 @@ int main(int argc, char **argv) {
 
   List *linesType = appendMDType(lines);
   FreeList(lines, false);
-  printList(linesType);
 
+  List *htmlList = createHtmlFromMDList(linesType);
+  printList(htmlList);
   for (int i = 0; i < linesType->size; ++i) {
     free(((MDLine_t *)linesType->elements[i])->data);
   }
   FreeList(linesType, true);
+  FreeList(htmlList, true);
 
   return 0;
+}
+
+List *createHtmlFromMDList(List *list) {
+  List *ans = CreateList(list->size);
+  for (int i=0; i<list->size; ++i) {
+    MDLineType type = ((MDLine_t *)list->elements[i])->type;
+    char *line = ((MDLine_t *)list->elements[i])->data;
+    int htmlSize = strlen(MDtoHTML[type]) + strlen(line);
+    char *html = malloc(sizeof(char) * htmlSize);
+    sprintf(html, MDtoHTML[type], line);
+    PushList(ans, html);
+  }
+  return ans;
 }
 
 MDLineType getMDLineType(char *line) {
@@ -92,7 +126,7 @@ MDLineType getMDLineType(char *line) {
           type = HEADER4;
           if (firstSix[4] == '#') {
             type = HEADER5;
-            if (strcmp(firstSix, "######") == 0) {
+            if (firstSix[5] == '#') {
               type = HEADER6;
             }
           }
@@ -127,10 +161,7 @@ List *appendMDType(List *list) {
 
 void printList(List *list) {
   for (int i = 0; i < list->size; ++i) {
-    if (((MDLine_t *)list->elements[i])->type != UNDEF) {
-      printf("Element: %s\nType: %s\n", ((MDLine_t *)list->elements[i])->data,
-             MDElementTypeNames[((MDLine_t *)list->elements[i])->type]);
-    }
+    printf("%s\n", (char *)list->elements[i]);
   }
 }
 
