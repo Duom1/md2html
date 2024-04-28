@@ -13,7 +13,7 @@ enum MarkdownElementTypes {
   HEADER4,
   HEADER5,
   HEADER6,
-  BLOCK_QOUTE,
+  BLOCK_QUOTE,
   LIST,
   ULIST,
   CODE_BLOCK,
@@ -31,7 +31,7 @@ char MDElementTypeNames[][15] = {
   "header 4",
   "header 5",
   "header 6",
-  "block qoute",
+  "block quote",
   "list",
   "unordered list",
   "code block",
@@ -40,14 +40,14 @@ char MDElementTypeNames[][15] = {
   "paragraph"
 };
 char MDtoHTML[][30] = {
-  "%s\n",
+  "<p>%s</p>\n",
   "<h1>%s</h1>\n",
   "<h2>%s</h2>\n",
   "<h3>%s</h3>\n",
   "<h4>%s</h4>\n",
   "<h5>%s</h5>\n",
   "<h6>%s</h6>\n",
-  "<blockqoute>%s</blockqoute>\n",
+  "<blockquote>%s</blockquote>\n",
   "%s\n",
   "%s\n",
   "%s\n",
@@ -100,22 +100,26 @@ int main(int argc, char **argv) {
 }
 
 void trimChars(char *str, int toTrim, bool front) {
-  if (front) {
+  if (front || !front) {
     int len = strlen(str);
+    if (toTrim >= len) {
+      perror("trying to trim too much");
+      abort();
+    }
     for (int i = 0; i <= len - toTrim; ++i) {
       str[i] = str[i + toTrim];
     }
-  } else {
-    perror("not trimming from the front");
-    abort();
   }
 }
 
 List *createHtmlFromMDList(List *list) {
   List *ans = CreateList(list->size);
   for (int i = 0; i < list->size; ++i) {
-    MDLineType type = ((MDLine_t *)list->elements[i])->type;
     char *line = ((MDLine_t *)list->elements[i])->data;
+    if (strcmp(line, "") == 0) {
+      continue;
+    }
+    MDLineType type = ((MDLine_t *)list->elements[i])->type;
     int htmlSize = strlen(MDtoHTML[type]) + strlen(line);
     char *html = malloc(sizeof(char) * htmlSize);
     switch (type) {
@@ -141,6 +145,10 @@ List *createHtmlFromMDList(List *list) {
       break;
     case HEADER6:
       trimChars(line, 7, true);
+      sprintf(html, MDtoHTML[type], line);
+      break;
+    case BLOCK_QUOTE:
+      trimChars(line, 2, true);
       sprintf(html, MDtoHTML[type], line);
       break;
     default:
@@ -175,7 +183,7 @@ MDLineType getMDLineType(char *line) {
       }
     }
   } else if (firstSix[0] == '>') {
-    type = BLOCK_QOUTE;
+    type = BLOCK_QUOTE;
   } else if (firstSix[0] == '-') {
     type = ULIST;
     if (firstSix[1] == '-' && firstSix[2] == '-') {
@@ -202,7 +210,7 @@ List *appendMDType(List *list) {
 
 void printList(List *list) {
   for (int i = 0; i < list->size; ++i) {
-    printf("%s\n", (char *)list->elements[i]);
+    printf("%s", (char *)list->elements[i]);
   }
 }
 
