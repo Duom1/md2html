@@ -52,7 +52,7 @@ char MDtoHTML[][30] = {
   "%s\n",
   "%s\n",
   "<hr>\n",
-  "<img src=\"%s\" alt=\"%s\">\n",
+  "<img src=\"%s\">\n",
   "<p>%s</p>\n"
 };
 // clang-format on
@@ -69,6 +69,7 @@ void readFileIntoBuffer(char *name, char **target, int *size);
 List *appendMDType(List *list);
 MDLineType getMDLineType(char *line);
 List *createHtmlFromMDList(List *list);
+void trimChars(char *str, int toTrim, bool front);
 
 int main(int argc, char **argv) {
   if (argc > 2 || argc < 2) {
@@ -98,14 +99,54 @@ int main(int argc, char **argv) {
   return 0;
 }
 
+void trimChars(char *str, int toTrim, bool front) {
+  if (front) {
+    int len = strlen(str);
+    for (int i = 0; i <= len - toTrim; ++i) {
+      str[i] = str[i + toTrim];
+    }
+  } else {
+    perror("not trimming from the front");
+    abort();
+  }
+}
+
 List *createHtmlFromMDList(List *list) {
   List *ans = CreateList(list->size);
-  for (int i=0; i<list->size; ++i) {
+  for (int i = 0; i < list->size; ++i) {
     MDLineType type = ((MDLine_t *)list->elements[i])->type;
     char *line = ((MDLine_t *)list->elements[i])->data;
     int htmlSize = strlen(MDtoHTML[type]) + strlen(line);
     char *html = malloc(sizeof(char) * htmlSize);
-    sprintf(html, MDtoHTML[type], line);
+    switch (type) {
+    case HEADER1:
+      trimChars(line, 2, true);
+      sprintf(html, MDtoHTML[type], line);
+      break;
+    case HEADER2:
+      trimChars(line, 3, true);
+      sprintf(html, MDtoHTML[type], line);
+      break;
+    case HEADER3:
+      trimChars(line, 4, true);
+      sprintf(html, MDtoHTML[type], line);
+      break;
+    case HEADER4:
+      trimChars(line, 5, true);
+      sprintf(html, MDtoHTML[type], line);
+      break;
+    case HEADER5:
+      trimChars(line, 6, true);
+      sprintf(html, MDtoHTML[type], line);
+      break;
+    case HEADER6:
+      trimChars(line, 7, true);
+      sprintf(html, MDtoHTML[type], line);
+      break;
+    default:
+      sprintf(html, MDtoHTML[UNDEF], line);
+      break;
+    }
     PushList(ans, html);
   }
   return ans;
@@ -137,7 +178,7 @@ MDLineType getMDLineType(char *line) {
     type = BLOCK_QOUTE;
   } else if (firstSix[0] == '-') {
     type = ULIST;
-    if (firstSix[1] == '-' && firstSix[2] == '-'){
+    if (firstSix[1] == '-' && firstSix[2] == '-') {
       type = RULER;
     }
   } else if (firstSix[0] == '!') {

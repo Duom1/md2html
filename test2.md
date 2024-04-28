@@ -34,26 +34,6 @@ PyScript is a meta project that aims to combine multiple open technologies into 
 
 To try PyScript, import the appropriate pyscript files into the `<head>` tag of your html page:
 
-```html
-<head>
-    <link
-        rel="stylesheet"
-        href="https://pyscript.net/releases/2023.11.2/core.css"
-    />
-    <script
-        type="module"
-        src="https://pyscript.net/releases/2023.11.2/core.js"
-    ></script>
-</head>
-<body>
-    <script type="py" terminal>
-        from pyscript import display
-        display("Hello World!") # this goes to the DOM
-        print("Hello terminal") # this goes to the terminal
-    </script>
-</body>
-```
-
 You can then use PyScript components in your html page. PyScript currently offers various ways of running Python code:
 
 -   `<script type="py">`: can be used to define python code that is executable within the web page.
