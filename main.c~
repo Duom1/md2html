@@ -193,7 +193,9 @@ List *createHtmlFromMDList(List *list) {
       break;
     case ULIST:
       if (!multiLineElement) {
-        char *startUList = calloc(MAX_MULTILINE_ELEM_SE, sizeof(char));
+        char *startUList =
+            calloc(MAX_MULTILINE_ELEM_SE,
+                   sizeof(char)); // 10 is the max that a multiline stats can be
         if (startUList == NULL) {
           perror("failed to allocate momory for startUList in "
                  "createHtmlFromMDList()");
@@ -209,14 +211,16 @@ List *createHtmlFromMDList(List *list) {
       break;
     case LIST:
       if (!multiLineElement) {
-        char *startList = calloc(MAX_MULTILINE_ELEM_SE, sizeof(char));
-        if (startList == NULL) {
+        char *startUList =
+            calloc(MAX_MULTILINE_ELEM_SE,
+                   sizeof(char)); // 10 is the max that a multiline stats can be
+        if (startUList == NULL) {
           perror("failed to allocate momory for startUList in "
                  "createHtmlFromMDList()");
           abort();
         }
-        strcat(startList, listStart);
-        PushList(ans, startList);
+        strcat(startUList, ulistStart);
+        PushList(ans, start);
         multiLineElement = true;
       }
       trimChars(line, 3, true);

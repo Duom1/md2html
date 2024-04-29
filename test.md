@@ -24,3 +24,13 @@ Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint 
 ###### header 6
 
 Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.
+
+- jarkko
+- jori
+- jakob
+
+## ordered list yeppee
+
+1. jarkko
+1. jori
+1. jakob
