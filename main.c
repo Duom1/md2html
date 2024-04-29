@@ -1,4 +1,5 @@
 #include "list.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,8 +40,8 @@ char MDElementTypeNames[][15] = {
   "image",
   "paragraph"
 };
-char MDtoHTML[][30] = {
-  "%s\n",                           // for elements that conatin html
+char MDtoHTML[][40] = {
+  "%s\n",                           // for elements that contain html
   "<h1>%s</h1>\n",
   "<h2>%s</h2>\n",
   "<h3>%s</h3>\n",
@@ -48,11 +49,11 @@ char MDtoHTML[][30] = {
   "<h5>%s</h5>\n",
   "<h6>%s</h6>\n",
   "\n<blockquote>%s</blockquote>\n",
-  "<li>%s</li>\n",                  // list needs to be done
+  "<li>%s</li>\n",
   "<li>%s</li>\n",
   "<code>%s</code>\n",              // code block needs to be done
   "<hr>\n",
-  "<img src=\"%s\" alt=\"%s\">\n",  // image needs to be done
+  "<img src=\"%s\" alt=\"%s\" width=\"500\">\n",
   "<p>%s</p>\n"
 };
 // clang-format on
@@ -146,6 +147,9 @@ List *createHtmlFromMDList(List *list) {
       case ULIST:
         strcat(endMultiline, ulistEnd);
         break;
+      case LIST:
+        strcat(endMultiline, listEnd);
+        break;
       }
       PushList(ans, endMultiline);
       multiLineElement = false;
@@ -153,7 +157,8 @@ List *createHtmlFromMDList(List *list) {
         continue;
       }
     }
-    int htmlSize = strlen(MDtoHTML[type]) + strlen(line) + 1;
+    int lineLen = strlen(line);
+    int htmlSize = strlen(MDtoHTML[type]) + lineLen + 32;
     char *html = malloc(sizeof(char) * htmlSize);
     if (html == NULL) {
       perror("could not allocate space for html in createHtmlFromMDList()");
@@ -223,6 +228,30 @@ List *createHtmlFromMDList(List *list) {
       multiLineType = type;
       sprintf(html, MDtoHTML[type], line);
       break;
+    case IMAGE:
+      trimChars(line, 2, true);
+      trimChars(line, 1, false);
+      int imgTextStart = 0;
+      int imgTextEnd = 0;
+      for (int j = 0; j < lineLen; ++j) {
+        if (line[j] == ']') {
+          imgTextEnd = j;
+        }
+      }
+      char *altText = calloc(imgTextEnd, sizeof(char));
+      for (int j = imgTextStart; j < imgTextEnd; ++j) {
+        char imgTmp[2] = {line[j], '\0'};
+        strcat(altText, imgTmp);
+      }
+      imgTextStart = imgTextEnd + 2;
+      imgTextEnd = lineLen - 1;
+      char *fileText = calloc(imgTextEnd - imgTextStart, sizeof(char));
+      for (int j = imgTextStart; j < imgTextEnd; ++j) {
+        char imgTmp[2] = {line[j], '\0'};
+        strcat(fileText, imgTmp);
+      }
+      sprintf(html, MDtoHTML[type], fileText, altText);
+      break;
     default:
       sprintf(html, MDtoHTML[PARAG], line);
       break;
@@ -265,6 +294,8 @@ MDLineType getMDLineType(char *line) {
     type = IMAGE;
   } else if (firstSix[0] == '`' && firstSix[1] == '`' && firstSix[2] == '`') {
     type = CODE_BLOCK;
+  } else if (isdigit(firstSix[0]) && firstSix[1] == '.') {
+    type = LIST;
   }
   return type;
 }
